@@ -57,7 +57,6 @@ class _MyHomePageState extends State<MyHomePage> {
       // _counter = 1;
     }
   }
-  // int _count = 0;
 
   void _incrementCounter() {
     setState(() {
@@ -142,6 +141,8 @@ class _MyHomePageState extends State<MyHomePage> {
 }
 
 class LikeButton extends StatefulWidget {
+  const LikeButton({super.key});
+
   @override
   State<LikeButton> createState() => _LikeButtonState();
 }
