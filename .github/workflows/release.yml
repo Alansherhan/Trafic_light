@@ -1,0 +1,48 @@
+name: Build and Release Flutter APK
+
+on:
+  push:
+    tags:
+      - 'v*'            # runs when you push a tag like v1.0.0
+
+permissions:
+  contents: write       # needed to create a Release
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable            # or: flutter-version: '3.35.1'
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      # Turn tag 'v1.2.3' into APP_VERSION=1.2.3
+      - name: Read version from tag
+        run: echo "APP_VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
+        env:
+          GITHUB_REF_NAME: ${{ github.ref_name }}
+
+      - name: Build release APK
+        run: |
+          echo "Building $APP_VERSION"
+          flutter build apk --release \
+            --build-name "$APP_VERSION" \
+            --build-number "${GITHUB_RUN_NUMBER}"
+
+      - name: Create GitHub Release and upload APK
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}                        # v1.2.3
+          name: "Traffic Light v${{ env.APP_VERSION }}"           # Release title
+          body: "Automated build for ${{ github.ref_name }}."
+          files: build/app/outputs/flutter-apk/app-release.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
